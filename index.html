@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Daftar Harga TOKO DITA</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7efe6; --surface:#fffdf9; --ink:#2b1d12; --muted:#7a6553; --line:#e6d8c8;
+  --brand:#a9622b; --brand-ink:#ffffff; --tag:#ffd23f; --tag-ink:#2a2200;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1c140e; --surface:#2a1f17; --ink:#f3e8dc; --muted:#bfa994; --line:#43342a;
+    --brand:#d9955a; --brand-ink:#1c0f05; --tag:#ffd23f; --tag-ink:#2a2200; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1c140e; --surface:#2a1f17; --ink:#f3e8dc; --muted:#bfa994; --line:#43342a;
+  --brand:#d9955a; --brand-ink:#1c0f05; --tag:#ffd23f; --tag-ink:#2a2200; color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"DM Sans",system-ui,sans-serif;line-height:1.5}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px 80px}
+header{padding:32px 0 20px}
+h1{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:clamp(2rem,7vw,3.2rem);line-height:1.05;margin:0 0 8px;letter-spacing:-.02em}
+.sub{color:var(--muted);margin:0;max-width:52ch}
+.sticky{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:10px 0 12px;z-index:5}
+.search{width:100%;font:inherit;font-size:1rem;padding:14px 16px;border-radius:12px;border:2px solid var(--line);background:var(--surface);color:var(--ink)}
+.search:focus-visible,.chip:focus-visible,.wa:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;font:inherit;font-weight:500;font-size:.92rem;padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+h2{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:1.3rem;margin:28px 0 8px}
+.list{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;border-top:1px dashed var(--line)}
+.row:first-child{border-top:0}
+.name{font-weight:500}
+.unit{display:block;font-size:.84rem;color:var(--muted)}
+.price{flex:none;background:var(--tag);color:var(--tag-ink);font-weight:700;font-variant-numeric:tabular-nums;padding:6px 12px 6px 16px;border-radius:4px 8px 8px 4px;position:relative;white-space:nowrap}
+.price::before{content:"";position:absolute;left:5px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--surface)}
+.empty{padding:40px 16px;text-align:center;color:var(--muted)}
+footer{margin-top:32px;color:var(--muted);font-size:.9rem}
+.wa{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--brand);color:var(--brand-ink);font-weight:700;text-decoration:none;padding:13px 20px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 id="namaToko">TOKO DITA</h1>
+    <p class="sub">Daftar harga kebutuhan sehari-hari. Harga bisa berubah sewaktu-waktu. Terakhir diperbarui: <span id="tgl"></span>.</p>
+  </header>
+
+  <div class="sticky">
+    <input class="search" id="cari" type="search" placeholder="Cari barang, misalnya beras atau minyak" aria-label="Cari barang">
+    <div class="chips" id="chips" role="group" aria-label="Kategori"></div>
+  </div>
+
+  <main id="hasil"></main>
+
+  <footer>
+    <p id="alamat"></p>
+  </footer>
+</div>
+<a class="wa" id="wa" href="#">Tanya via WhatsApp</a>
+
+<script>
+/* ====== UBAH DATA DI SINI ====== */
+var TOKO = {
+  nama: "TOKO DITA",
+  alamat: "Buka setiap hari pukul 07.00–23.00",
+  whatsapp: "6282395139998",   // nomor WA tanpa tanda + dan tanpa 0 di depan
+  diperbarui: "28 Oktober 2026"
+};
+var BARANG = [
+  // [kategori, nama, satuan, harga]
+  ["Sembako","Beras premium","5 kg",72000],
+  ["Sembako","Beras medium","5 kg",64000],
+  ["Sembako","Minyak goreng","1 liter",18500],
+  ["Sembako","Gula pasir","1 kg",17500],
+  ["Sembako","Tepung terigu","1 kg",12500],
+  ["Sembako","Telur ayam","1 kg",30000],
+  ["Sembako","Garam dapur","250 g",3500],
+  ["Mi & Makanan Instan","Mi instan goreng","per bungkus",3500],
+  ["Mi & Makanan Instan","Mi instan kuah","per bungkus",3300],
+  ["Mi & Makanan Instan","Bubur instan","per sachet",3000],
+  ["Mi & Makanan Instan","Sarden kaleng","155 g",13500],
+  ["Minuman","Air mineral","600 ml",3500],
+  ["Minuman","Air mineral galon isi ulang","19 liter",6000],
+  ["Minuman","Teh celup","25 kantong",7500],
+  ["Minuman","Kopi sachet","per sachet",1500],
+  ["Minuman","Susu kental manis","370 g",12500],
+  ["Minuman","Minuman soda","390 ml",6000],
+  ["Camilan","Keripik kentang","65 g",9500],
+  ["Camilan","Biskuit","per bungkus",8000],
+  ["Camilan","Permen","per bungkus",5000],
+  ["Camilan","Wafer cokelat","per bungkus",2500],
+  ["Kebutuhan Rumah","Sabun cuci piring","750 ml",14000],
+  ["Kebutuhan Rumah","Deterjen bubuk","800 g",19500],
+  ["Kebutuhan Rumah","Sabun mandi","per batang",4500],
+  ["Kebutuhan Rumah","Sampo sachet","per sachet",1000],
+  ["Kebutuhan Rumah","Pasta gigi","75 g",11000],
+  ["Kebutuhan Rumah","Tisu gulung","per roll",4500],
+  ["Kebutuhan Rumah","Gas LPG 3 kg","per tabung",25000]
+];
+/* ====== BATAS DATA ====== */
+
+var kategoriAktif = "Semua";
+var rupiah = function(n){ return "Rp" + n.toLocaleString("id-ID"); };
+var esc = function(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); };
+
+document.title = "Daftar Harga " + TOKO.nama;
+document.getElementById("namaToko").textContent = TOKO.nama;
+document.getElementById("tgl").textContent = TOKO.diperbarui;
+document.getElementById("alamat").textContent = TOKO.alamat;
+document.getElementById("wa").href = "https://wa.me/" + TOKO.whatsapp + "?text=" + encodeURIComponent("Halo, saya mau tanya ketersediaan barang di " + TOKO.nama);
+
+var kategori = ["Semua"];
+BARANG.forEach(function(b){ if(kategori.indexOf(b[0])<0) kategori.push(b[0]); });
+
+function renderChips(){
+  var el = document.getElementById("chips");
+  el.innerHTML = kategori.map(function(k){
+    return '<button class="chip" aria-pressed="'+(k===kategoriAktif)+'" data-k="'+esc(k)+'">'+esc(k)+'</button>';
+  }).join("");
+  Array.prototype.forEach.call(el.querySelectorAll(".chip"),function(b){
+    b.onclick = function(){ kategoriAktif = b.getAttribute("data-k"); renderChips(); renderList(); };
+  });
+}
+
+function renderList(){
+  var q = document.getElementById("cari").value.trim().toLowerCase();
+  var data = BARANG.filter(function(b){
+    return (kategoriAktif==="Semua" || b[0]===kategoriAktif) && (b[1].toLowerCase().indexOf(q)>-1);
+  });
+  var out = document.getElementById("hasil");
+  if(!data.length){ out.innerHTML = '<div class="empty">Barang tidak ditemukan. Coba kata kunci lain atau tanyakan lewat WhatsApp.</div>'; return; }
+  var grup = {};
+  data.forEach(function(b){ (grup[b[0]] = grup[b[0]] || []).push(b); });
+  out.innerHTML = Object.keys(grup).map(function(k){
+    return '<h2>'+esc(k)+'</h2><div class="list">' + grup[k].map(function(b){
+      return '<div class="row"><div class="name">'+esc(b[1])+'<span class="unit">'+esc(b[2])+'</span></div><div class="price">'+rupiah(b[3])+'</div></div>';
+    }).join("") + '</div>';
+  }).join("");
+}
+
+document.getElementById("cari").addEventListener("input", renderList);
+renderChips(); renderList();
+</script>
+</body>
+</html>
